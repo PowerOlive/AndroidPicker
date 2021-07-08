@@ -117,6 +117,7 @@ public class TimeWheelLayout extends BaseWheelLayout {
         setIndicatorEnabled(typedArray.getBoolean(R.styleable.TimeWheelLayout_wheel_indicatorEnabled, false));
         setIndicatorColor(typedArray.getColor(R.styleable.TimeWheelLayout_wheel_indicatorColor, 0xFFEE3333));
         setIndicatorSize(typedArray.getDimension(R.styleable.TimeWheelLayout_wheel_indicatorSize, 1 * density));
+        setCurvedIndicatorSpace(typedArray.getDimensionPixelSize(R.styleable.TimeWheelLayout_wheel_curvedIndicatorSpace, (int) (1 * density)));
         setCurtainEnabled(typedArray.getBoolean(R.styleable.TimeWheelLayout_wheel_curtainEnabled, false));
         setCurtainColor(typedArray.getColor(R.styleable.TimeWheelLayout_wheel_curtainColor, 0x88FFFFFF));
         setAtmosphericEnabled(typedArray.getBoolean(R.styleable.TimeWheelLayout_wheel_atmosphericEnabled, false));
@@ -197,9 +198,16 @@ public class TimeWheelLayout extends BaseWheelLayout {
      */
     public void setRange(@NonNull TimeEntity startValue, @NonNull TimeEntity endValue,
                          @Nullable TimeEntity defaultValue) {
+        if (endValue.toTimeInMillis() < startValue.toTimeInMillis()) {
+            throw new IllegalArgumentException("Ensure the start time is less than the time date");
+        }
         this.startValue = startValue;
         this.endValue = endValue;
         if (defaultValue != null) {
+            if (defaultValue.toTimeInMillis() < startValue.toTimeInMillis() ||
+                    defaultValue.toTimeInMillis() > endValue.toTimeInMillis()) {
+                throw new IllegalArgumentException("The default time is out of range");
+            }
             selectedHour = defaultValue.getHour();
             selectedMinute = defaultValue.getMinute();
             selectedSecond = defaultValue.getSecond();

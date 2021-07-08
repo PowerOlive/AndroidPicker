@@ -15,6 +15,7 @@ package com.github.gzuliyujiang.fallback.custom;
 
 import android.app.Activity;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,7 +30,8 @@ import com.github.gzuliyujiang.wheelpicker.entity.CityEntity;
 import com.github.gzuliyujiang.wheelpicker.entity.CountyEntity;
 import com.github.gzuliyujiang.wheelpicker.entity.ProvinceEntity;
 import com.github.gzuliyujiang.wheelpicker.impl.AddressProvider;
-import com.github.gzuliyujiang.wheelpicker.impl.AssetsAddressLoader;
+import com.github.gzuliyujiang.wheelpicker.impl.AssetAddressLoader;
+import com.github.gzuliyujiang.wheelpicker.utility.AddressJsonParser;
 import com.github.gzuliyujiang.wheelpicker.widget.LinkageWheelLayout;
 import com.github.gzuliyujiang.wheelview.widget.WheelView;
 
@@ -42,7 +44,6 @@ import java.util.List;
  * @since 2021/6/7 16:03
  */
 public class CustomAddressPicker extends BottomDialog implements AddressReceiver {
-    private static final String ASSETS_JSON = "china_administrative_division.json";
     protected LinkageWheelLayout wheelLayout;
     private OnAddressPickedListener onAddressPickedListener;
 
@@ -83,12 +84,24 @@ public class CustomAddressPicker extends BottomDialog implements AddressReceiver
     @Override
     protected void initData() {
         super.initData();
-        AddressLoader addressLoader = new AssetsAddressLoader(getContext(), ASSETS_JSON);
-        addressLoader.loadJson(this);
+        wheelLayout.showLoading();
+        AddressLoader addressLoader = new AssetAddressLoader(getContext(), "pca-code.json");
+        addressLoader.loadJson(this,
+                new AddressJsonParser.Builder()
+                        .provinceCodeField("code")
+                        .provinceNameField("name")
+                        .provinceChildField("children")
+                        .cityCodeField("code")
+                        .cityNameField("name")
+                        .cityChildField("children")
+                        .countyCodeField("code")
+                        .countyNameField("name")
+                        .build());
     }
 
     @Override
     public void onAddressReceived(@NonNull List<ProvinceEntity> data) {
+        wheelLayout.hideLoading();
         wheelLayout.setData(new AddressProvider(data, AddressMode.PROVINCE_CITY_COUNTY));
     }
 
@@ -126,6 +139,10 @@ public class CustomAddressPicker extends BottomDialog implements AddressReceiver
 
     public final TextView getCountyLabelView() {
         return wheelLayout.getThirdLabelView();
+    }
+
+    public final ProgressBar getLoadingView() {
+        return wheelLayout.getLoadingView();
     }
 
 }

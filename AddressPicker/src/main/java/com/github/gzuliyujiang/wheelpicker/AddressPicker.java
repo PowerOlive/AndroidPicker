@@ -18,16 +18,20 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.StyleRes;
 
+import com.github.gzuliyujiang.wheelpicker.annotation.AddressMode;
 import com.github.gzuliyujiang.wheelpicker.contract.AddressLoader;
+import com.github.gzuliyujiang.wheelpicker.contract.AddressParser;
 import com.github.gzuliyujiang.wheelpicker.contract.AddressReceiver;
 import com.github.gzuliyujiang.wheelpicker.contract.LinkageProvider;
+import com.github.gzuliyujiang.wheelpicker.contract.OnAddressLoadListener;
 import com.github.gzuliyujiang.wheelpicker.contract.OnAddressPickedListener;
 import com.github.gzuliyujiang.wheelpicker.contract.OnLinkagePickedListener;
 import com.github.gzuliyujiang.wheelpicker.entity.CityEntity;
 import com.github.gzuliyujiang.wheelpicker.entity.CountyEntity;
 import com.github.gzuliyujiang.wheelpicker.entity.ProvinceEntity;
 import com.github.gzuliyujiang.wheelpicker.impl.AddressProvider;
-import com.github.gzuliyujiang.wheelpicker.impl.AssetsAddressLoader;
+import com.github.gzuliyujiang.wheelpicker.impl.AssetAddressLoader;
+import com.github.gzuliyujiang.wheelpicker.utility.AddressJsonParser;
 
 import java.util.List;
 
@@ -47,8 +51,10 @@ import java.util.List;
 @SuppressWarnings({"unused"})
 public class AddressPicker extends LinkagePicker implements AddressReceiver {
     private AddressLoader addressLoader;
+    private AddressParser addressParser;
     private int addressMode;
     private OnAddressPickedListener onAddressPickedListener;
+    private OnAddressLoadListener onAddressLoadListener;
 
     public AddressPicker(@NonNull Activity activity) {
         super(activity);
@@ -61,14 +67,22 @@ public class AddressPicker extends LinkagePicker implements AddressReceiver {
     @Override
     protected void initData() {
         super.initData();
-        if (addressLoader == null) {
+        if (addressLoader == null || addressParser == null) {
             return;
         }
-        addressLoader.loadJson(this);
+        wheelLayout.showLoading();
+        if (onAddressLoadListener != null) {
+            onAddressLoadListener.onAddressLoadStarted();
+        }
+        addressLoader.loadJson(this, addressParser);
     }
 
     @Override
     public void onAddressReceived(@NonNull List<ProvinceEntity> data) {
+        wheelLayout.hideLoading();
+        if (onAddressLoadListener != null) {
+            onAddressLoadListener.onAddressLoadFinished(data);
+        }
         wheelLayout.setData(new AddressProvider(data, addressMode));
     }
 
@@ -95,17 +109,31 @@ public class AddressPicker extends LinkagePicker implements AddressReceiver {
     }
 
 
-    public void setOnAddressPickedListener(OnAddressPickedListener onAddressPickedListener) {
+    public void setOnAddressPickedListener(@NonNull OnAddressPickedListener onAddressPickedListener) {
         this.onAddressPickedListener = onAddressPickedListener;
     }
 
-    public void setAddressLoader(@NonNull AddressLoader loader) {
-        this.addressLoader = loader;
+    public void setOnAddressLoadListener(@NonNull OnAddressLoadListener onAddressLoadListener) {
+        this.onAddressLoadListener = onAddressLoadListener;
     }
 
-    public void setAddressMode(String jsonPath, int mode) {
-        this.addressMode = mode;
-        setAddressLoader(new AssetsAddressLoader(getContext(), jsonPath));
+    public void setAddressLoader(@NonNull AddressLoader loader, @NonNull AddressParser parser) {
+        this.addressLoader = loader;
+        this.addressParser = parser;
+    }
+
+    public void setAddressMode(@AddressMode int addressMode) {
+        setAddressMode("china_address.json", addressMode);
+    }
+
+    public void setAddressMode(@NonNull String assetPath, @AddressMode int addressMode) {
+        setAddressMode(assetPath, addressMode, new AddressJsonParser());
+    }
+
+    public void setAddressMode(@NonNull String assetPath, @AddressMode int addressMode,
+                               @NonNull AddressJsonParser jsonParser) {
+        this.addressMode = addressMode;
+        setAddressLoader(new AssetAddressLoader(getContext(), assetPath), jsonParser);
     }
 
 }

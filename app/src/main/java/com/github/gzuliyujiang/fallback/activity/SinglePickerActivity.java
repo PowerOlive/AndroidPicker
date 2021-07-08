@@ -24,14 +24,17 @@ import androidx.fragment.app.FragmentActivity;
 import com.github.gzuliyujiang.fallback.R;
 import com.github.gzuliyujiang.fallback.bean.GoodsCategoryBean;
 import com.github.gzuliyujiang.wheelpicker.ConstellationPicker;
+import com.github.gzuliyujiang.wheelpicker.EthnicPicker;
 import com.github.gzuliyujiang.wheelpicker.NumberPicker;
 import com.github.gzuliyujiang.wheelpicker.OptionPicker;
 import com.github.gzuliyujiang.wheelpicker.PhoneCodePicker;
 import com.github.gzuliyujiang.wheelpicker.SexPicker;
+import com.github.gzuliyujiang.wheelpicker.annotation.EthnicSpec;
 import com.github.gzuliyujiang.wheelpicker.contract.OnNumberPickedListener;
 import com.github.gzuliyujiang.wheelpicker.contract.OnOptionPickedListener;
 import com.github.gzuliyujiang.wheelview.contract.WheelFormatter;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,8 +81,15 @@ public class SinglePickerActivity extends FragmentActivity implements OnNumberPi
         NumberPicker picker = new NumberPicker(this);
         picker.setBodyWidth(100);
         picker.setOnNumberPickedListener(this);
-        picker.setRange(-20f, 40f, 0.5f);
-        picker.setDefaultValue(10f);
+        picker.setFormatter(new WheelFormatter() {
+            @Override
+            public String formatItem(@NonNull Object item) {
+                DecimalFormat df = new DecimalFormat("0.00");
+                return df.format(item);
+            }
+        });
+        picker.setRange(-10f, 10f, 0.1f);
+        picker.setDefaultValue(5f);
         picker.getTitleView().setText("温度选择");
         picker.getLabelView().setText("℃");
         picker.show();
@@ -116,6 +126,13 @@ public class SinglePickerActivity extends FragmentActivity implements OnNumberPi
     public void onSex(View view) {
         SexPicker picker = new SexPicker(this);
         picker.setDefaultValue("女");
+        picker.setOnOptionPickedListener(this);
+        picker.show();
+    }
+
+    public void onEthnic(View view) {
+        EthnicPicker picker = new EthnicPicker(this);
+        picker.setEthnicSpec(EthnicSpec.SEVENTH_NATIONAL_CENSUS);
         picker.setOnOptionPickedListener(this);
         picker.show();
     }

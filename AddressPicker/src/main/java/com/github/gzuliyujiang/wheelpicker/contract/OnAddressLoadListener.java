@@ -13,18 +13,20 @@
 
 package com.github.gzuliyujiang.wheelpicker.contract;
 
-import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 
-/**
- * 地址数据加载器
- *
- * @author 贵州山野羡民（1032694760@qq.com）
- * @since 2019/6/17 16:42
- */
-public interface AddressLoader {
+import com.github.gzuliyujiang.wheelpicker.entity.ProvinceEntity;
 
-    @MainThread
-    void loadJson(@NonNull AddressReceiver receiver);
+import java.util.List;
+
+/**
+ * @author 贵州山野羡民（1032694760@qq.com）
+ * @since 2021/6/30 15:20
+ */
+public interface OnAddressLoadListener {
+
+    void onAddressLoadStarted();
+
+    void onAddressLoadFinished(@NonNull List<ProvinceEntity> data);
 
 }
